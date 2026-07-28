@@ -4,6 +4,8 @@ AzuriteでAzure Blob Storageの直接アップロードを試すためのデモ�
 
 ## Files
 
+- `demo/`
+  - Azurite とデモ用 local API を Docker Compose で起動し、SAS URL 発行、直接 PUT、完了確認、失敗ケースを手元で試せるデモ一式です。
 - `outputs/azurite-blob-upload-lt-native.pptx`
   - 発表・デモ用のPowerPoint資料です。
 - `outputs/azurite-architecture.png`
@@ -49,3 +51,18 @@ flowchart LR
 ファイル本体はWeb/APIを通らず、BrowserがSAS URLを使ってBlob Storageへ直接PUTします。
 Web/APIは、アップロード可否の判断、SAS URL発行、完了通知の受付、Blob properties確認、Metadata DBの状態更新を担当します。
 
+## Try the Demo
+
+```bash
+cd demo
+docker compose up azurite azurite-init
+```
+
+別ターミナルで:
+
+```bash
+cd demo
+curl http://localhost:3000/health
+```
+
+詳しい手順は [demo/README.md](demo/README.md) を参照してください。
