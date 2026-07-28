@@ -1,69 +1,197 @@
 # Azurite Blob Upload Demo
 
-Azure Blob Storage への直接アップロード構成を、Azurite でローカル検証するためのデモです。
+Azure Blob Storageへの直接アップロード構成を、Azuriteでローカル検証するためのデモです。
 
-このデモでは、次の流れを手元で試せます。
+このデモでは、次の流れを確認できます。
 
-- SAS URL を発行する
-- SAS URL を使って Blob へ直接 PUT する
-- Blob properties を確認して `completed` にする
-- 申告サイズと実サイズが違う失敗ケースを `failed` にする
+1. local APIがSAS URLを発行する
+2. クライアントがSAS URLを使ってBlobへ直接PUTする
+3. local APIがBlob propertiesを確認する
+4. 正常なアップロードを`completed`にする
+5. 申告サイズと実サイズが違うアップロードを`failed`にする
 
-## まず試す
+## このディレクトリの構成
 
-Docker Desktop を起動してから、ターミナル1で実行します。
-
-```bash
-docker compose up azurite azurite-init
+```text
+demo/
+├── api/                 # デモ用local API
+├── compose.yaml         # Azuriteとlocal APIの構成
+├── demo.sh              # macOS / Linux / WSL向け補助スクリプト
+└── README.md            # 全OS共通の実行手順
 ```
 
-別ターミナルで、成功ケースを一括実行します。
-
-```bash
-./demo.sh success
-```
-
-失敗ケースも試す場合:
-
-```bash
-./demo.sh fail
-```
-
-1つずつコマンドを打って LT と同じ流れを確認したい場合は、下の `Demo 1` 以降を順番に実行してください。
+ドキュメントはこのREADMEに集約しています。
+OSごとに別の説明書を探す必要はありません。文明は少しだけ前進しました。
 
 ## 必要なもの
 
+Azureアカウント、Azure CLI、Azure Storage Accountは不要です。
+
+### 共通
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- [Git](https://git-scm.com/install/)
+
+### macOS / Linux / WSL
+
+- bash
+- curl
+- Node.js
+
+Node.jsは、APIレスポンスのJSONから`uploadUrl`と`attachmentId`を取り出すために使います。
+
+macOSでHomebrewを利用している場合:
+
+```bash
+brew install git node
+```
+
+Docker Desktopのインストーラーを選ぶ際にMacのチップを確認したい場合:
+
+```bash
+uname -m
+```
+
+- `arm64`: Apple Silicon
+- `x86_64`: Intel
+
+### Windows PowerShell
+
+- Windows PowerShell
+- Git for Windows
 - Docker Desktop
-  - Azurite と local API を Docker Compose で起動するために使います
-- Git
-  - このリポジトリを取得するために使います
-- macOS / Linux / WSL の場合
-  - curl
-  - Node.js
-    - 手動コマンドや `demo.sh` で、レスポンス JSON から `uploadUrl` と `attachmentId` を取り出すために使います
-- Windows PowerShell の場合
-  - Windows PowerShell
-  - Windows PowerShell の手順だけを使う場合、ローカルの Node.js は不要です
 
-Azureアカウント、Azure CLI、Azure Storage Account は不要です。
-このデモでは Azurite が Blob Storage の代わりとしてローカルで動きます。
+Git for WindowsはWinGetでも導入できます。
 
-## 初回起動時にダウンロードされるもの
+```powershell
+winget install --id Git.Git -e --source winget
+```
 
-初回の `docker compose up azurite azurite-init` では、必要な Docker image や npm packages を取得するため、少し時間がかかります。
+Windows PowerShellの手順では、作業用のUbuntuやローカルのNode.jsは不要です。
 
-- Azurite の Docker image
-  - `mcr.microsoft.com/azure-storage/azurite:latest`
-- local API 用の Docker base image
-  - `node:22-alpine`
-- local API の npm packages
-  - `express`
-  - `@azure/storage-blob`
+## インストール確認
 
-初回起動時はインターネット接続が必要です。
-2回目以降は、取得済みの image や package cache が使われるため、初回より速く起動できます。
+macOS / Linux / WSL:
 
-## デモ環境の構成
+```bash
+git --version
+curl --version
+node --version
+docker compose version
+```
+
+Windows PowerShell:
+
+```powershell
+git --version
+docker compose version
+```
+
+Dockerコマンドがデーモンへ接続できない場合は、Docker Desktopを起動してください。
+
+macOS:
+
+```bash
+open -a Docker
+```
+
+## リポジトリを取得
+
+任意の作業用ディレクトリで実行します。
+
+macOS / Linux / WSL:
+
+```bash
+cd ~
+mkdir -p 20260728-dx-dojo
+cd 20260728-dx-dojo
+
+git clone https://github.com/horinat/azurite-blob-upload-demo.git
+cd azurite-blob-upload-demo/demo
+```
+
+Windows PowerShell:
+
+```powershell
+cd $HOME
+mkdir 20260728-dx-dojo -Force
+cd 20260728-dx-dojo
+
+git clone https://github.com/horinat/azurite-blob-upload-demo.git
+cd azurite-blob-upload-demo\demo
+```
+
+すでにclone済みの場合は、再度cloneせず既存のリポジトリを更新します。
+
+macOS / Linux / WSL:
+
+```bash
+cd ~/20260728-dx-dojo/azurite-blob-upload-demo
+git pull
+cd demo
+```
+
+Windows PowerShell:
+
+```powershell
+cd $HOME\20260728-dx-dojo\azurite-blob-upload-demo
+git pull
+cd demo
+```
+
+現在地の末尾が`azurite-blob-upload-demo/demo`になっていることを確認してください。
+
+macOS / Linux / WSL:
+
+```bash
+pwd
+```
+
+Windows PowerShell:
+
+```powershell
+Get-Location
+```
+
+## まず試す
+
+### macOS / Linux / WSL
+
+`demo.sh`を使うと、最短で一連の流れを確認できます。
+
+```bash
+./demo.sh start
+./demo.sh success
+./demo.sh fail
+```
+
+- `start`: Azuriteとlocal APIをバックグラウンドで起動
+- `success`: 正常系を一括実行
+- `fail`: サイズ不一致の失敗系を一括実行
+
+`permission denied: ./demo.sh`と表示された場合:
+
+```bash
+chmod +x demo.sh
+```
+
+### Windows PowerShell
+
+ターミナル1で起動します。
+
+```powershell
+docker compose up azurite azurite-init
+```
+
+ログに次が表示されたら準備完了です。
+
+```text
+Local API listening on http://localhost:3000
+```
+
+ターミナル1は開いたままにし、別のPowerShellで以降の手順を実行します。
+
+## デモ環境
 
 ```mermaid
 flowchart LR
@@ -88,103 +216,40 @@ flowchart LR
   User -->|"SAS URLで直接PUT"| Azurite
 ```
 
-このデモで動くもの:
+起動するサービス:
 
 - `azurite`
-  - Azure Blob Storage のローカルエミュレーターです
-  - Blob endpoint は `http://127.0.0.1:10000` です
+  - Azure Blob Storageのローカルエミュレーター
+  - Blob endpoint: `http://127.0.0.1:10000`
 - `azurite-init`
-  - デモ用 local API です
-  - API endpoint は `http://localhost:3000` です
-  - `attachments` コンテナ作成、CORS設定、SAS URL発行、Blob properties確認を行います
+  - デモ用local API
+  - API endpoint: `http://localhost:3000`
+  - `attachments`コンテナ作成、CORS設定、SAS URL発行、Blob properties確認を担当
 
-使うポート:
+使用するポート:
 
 - `10000`: Azurite Blob endpoint
-- `3000`: デモ用 local API
+- `3000`: local API
 
-## デモ環境構築
+初回起動時はAzurite image、Node.js base image、npm packagesを取得するため、インターネット接続が必要です。
 
-### 1. リポジトリを取得
-
-```bash
-git clone https://github.com/horinat/azurite-blob-upload-demo.git
-cd azurite-blob-upload-demo
-```
-
-### 2. Docker Desktop を起動
-
-このデモは Azurite と local API を Docker Compose で起動します。
-事前に Docker Desktop を起動して、`docker compose` が使える状態にしてください。
-
-確認:
-
-```bash
-docker compose version
-```
-
-### 3. デモ用ディレクトリへ移動
-
-macOS / Linux / WSL:
-
-```bash
-cd demo
-```
-
-Windows PowerShell:
-
-```powershell
-cd demo
-```
-
-### 4. 初回起動
-
-```bash
-docker compose up azurite azurite-init
-```
-
-初回は Docker image の取得と local API の依存パッケージインストールがあるため、少し時間がかかります。
-ログに `Local API listening on http://localhost:3000` が出たら準備完了です。
-
-### 5. 疎通確認
-
-別ターミナルを開き、同じ `demo` ディレクトリで実行します。
-
-macOS / Linux / WSL:
-
-```bash
-curl http://localhost:3000/health
-```
-
-Windows PowerShell:
-
-```powershell
-Invoke-RestMethod -Uri "http://localhost:3000/health"
-```
-
-`{"ok":true}` または `ok: True` が返れば、デモ環境は起動できています。
-
-## OS別のコマンド
-
-このREADMEのコマンドは macOS / Linux / WSL の bash 向けです。
-
-Windows PowerShell で実行したい場合は、[WINDOWS_POWERSHELL.md](WINDOWS_POWERSHELL.md) を参照してください。
-
-## Demo 1: Azurite を起動
+## 1. Azuriteとlocal APIを起動
 
 ターミナル1で実行します。
 
 ```bash
-cd demo
 docker compose up azurite azurite-init
 ```
 
-このターミナルは起動ログ表示用なので、開いたままにします。
+このコマンドはmacOS、Linux、WSL、Windows PowerShellで共通です。
+ターミナル1は起動ログ表示用なので開いたままにします。
 
-別ターミナルで疎通確認します。
+別のターミナルで疎通確認します。
+
+macOS / Linux / WSL:
 
 ```bash
-curl http://localhost:3000/health
+curl -sS http://localhost:3000/health
 ```
 
 期待する結果:
@@ -193,61 +258,142 @@ curl http://localhost:3000/health
 {"ok":true}
 ```
 
-## Demo 2: SAS URL を発行
+Windows PowerShell:
 
-ターミナル2で実行します。
-
-```bash
-cd demo
+```powershell
+Invoke-RestMethod -Uri "http://localhost:3000/health"
 ```
 
+期待する結果:
+
+```text
+ok
+--
+True
+```
+
+## 2. SAS URLを発行
+
+### macOS / Linux / WSL
+
 ```bash
-RESP=$(curl -s -X POST http://localhost:3000/api/attachments/prepare \
+RESP=$(curl -sS -X POST http://localhost:3000/api/attachments/prepare \
   -H "Content-Type: application/json" \
   -d '{
     "fileName": "hello.txt",
     "fileSize": 12,
     "contentType": "text/plain"
   }')
-```
 
-```bash
 echo "$RESP"
 ```
 
-次のデモで使う値を取り出します。
+次の手順で使う値を変数へ入れます。
 
 ```bash
 UPLOAD_URL=$(node -e 'console.log(JSON.parse(process.argv[1]).uploadUrl)' "$RESP")
 ATTACHMENT_ID=$(node -e 'console.log(JSON.parse(process.argv[1]).attachmentId)' "$RESP")
-```
 
-確認:
-
-```bash
 echo "$UPLOAD_URL"
 echo "$ATTACHMENT_ID"
 ```
 
-## Demo 3: Blob へ直接 PUT
+### Windows PowerShell
+
+```powershell
+$resp = Invoke-RestMethod `
+  -Method Post `
+  -Uri "http://localhost:3000/api/attachments/prepare" `
+  -ContentType "application/json" `
+  -Body '{
+    "fileName": "hello.txt",
+    "fileSize": 12,
+    "contentType": "text/plain"
+  }'
+
+$uploadUrl = $resp.uploadUrl
+$attachmentId = $resp.attachmentId
+
+$resp
+$uploadUrl
+$attachmentId
+```
+
+発行されたアップロードURLは`http://127.0.0.1:10000/...`から始まります。
+PUT先は`localhost:3000`のAPIではなく、AzuriteのBlob endpointです。
+
+## 3. Blobへ直接PUT
+
+### macOS / Linux / WSL
+
+12バイトのファイルを作成して確認します。
 
 ```bash
 printf "hello azure\n" > /tmp/hello.txt
+wc -c < /tmp/hello.txt
 ```
 
+`12`と表示されることを確認してアップロードします。
+
 ```bash
-curl -X PUT "$UPLOAD_URL" \
+curl -i -X PUT "$UPLOAD_URL" \
   -H "x-ms-blob-type: BlockBlob" \
   -H "Content-Type: text/plain" \
   --data-binary @/tmp/hello.txt
 ```
 
-`UPLOAD_URL` は `http://127.0.0.1:10000/...` から始まります。つまり、PUT 先は `localhost:3000` の API ではなく、Azurite の Blob エンドポイントです。
+期待する結果:
 
-## Demo 4: 完了確認
+```text
+HTTP/1.1 201 Created
+```
+
+### Windows PowerShell
+
+PowerShellの文字コードや改行差異を避けるため、UTF-8 BOMなしで書き込みます。
+
+```powershell
+[System.IO.File]::WriteAllText(
+  "$env:TEMP\hello.txt",
+  "hello azure`n",
+  [System.Text.UTF8Encoding]::new($false)
+)
+
+(Get-Item "$env:TEMP\hello.txt").Length
+```
+
+`12`と表示されることを確認してアップロードします。
+
+```powershell
+Invoke-WebRequest `
+  -UseBasicParsing `
+  -Method Put `
+  -Uri $uploadUrl `
+  -Headers @{
+    "x-ms-blob-type" = "BlockBlob"
+    "Content-Type" = "text/plain"
+  } `
+  -InFile "$env:TEMP\hello.txt"
+```
+
+期待する結果:
+
+```text
+StatusCode        : 201
+StatusDescription : Created
+```
+
+`-UseBasicParsing`は、Windows PowerShellがレスポンスをWebページとして解析する際のセキュリティ警告を避けるために指定しています。
+
+## 4. 完了確認
+
+local APIがBlob propertiesを取得し、申告したファイルサイズとContent-Typeに一致することを確認します。
+
+### macOS / Linux / WSL
 
 ```bash
-curl -X POST "http://localhost:3000/api/attachments/$ATTACHMENT_ID/complete"
+curl -sS -X POST \
+  "http://localhost:3000/api/attachments/$ATTACHMENT_ID/complete"
 ```
 
 期待する結果:
@@ -256,74 +402,238 @@ curl -X POST "http://localhost:3000/api/attachments/$ATTACHMENT_ID/complete"
 {"status":"completed","fileSize":12,"contentType":"text/plain"}
 ```
 
-## Demo 5: 失敗ケース
+### Windows PowerShell
 
-わざと `fileSize: 999` と申告して、実際には小さいファイルをアップロードします。
+```powershell
+Invoke-RestMethod `
+  -Method Post `
+  -Uri "http://localhost:3000/api/attachments/$attachmentId/complete"
+```
+
+期待する結果:
+
+```text
+status    fileSize contentType
+------    -------- -----------
+completed       12 text/plain
+```
+
+## 5. サイズ不一致の失敗ケース
+
+`fileSize: 999`と申告し、実際には6バイトのファイルをアップロードします。
+BlobへのPUT自体は成功しますが、完了確認でHTTP 422になります。
+
+### macOS / Linux / WSL
+
+新しいSAS URLを発行します。
 
 ```bash
-RESP=$(curl -s -X POST http://localhost:3000/api/attachments/prepare \
+RESP=$(curl -sS -X POST http://localhost:3000/api/attachments/prepare \
   -H "Content-Type: application/json" \
   -d '{
     "fileName": "wrong-size.txt",
     "fileSize": 999,
     "contentType": "text/plain"
   }')
-```
 
-```bash
-echo "$RESP"
-```
-
-```bash
 UPLOAD_URL=$(node -e 'console.log(JSON.parse(process.argv[1]).uploadUrl)' "$RESP")
 ATTACHMENT_ID=$(node -e 'console.log(JSON.parse(process.argv[1]).attachmentId)' "$RESP")
 ```
 
-```bash
-printf "small\n" > /tmp/small.txt
-```
+6バイトのファイルを作成してPUTします。
 
 ```bash
-curl -X PUT "$UPLOAD_URL" \
+printf "small\n" > /tmp/small.txt
+wc -c < /tmp/small.txt
+
+curl -i -X PUT "$UPLOAD_URL" \
   -H "x-ms-blob-type: BlockBlob" \
   -H "Content-Type: text/plain" \
   --data-binary @/tmp/small.txt
 ```
 
+完了確認:
+
 ```bash
-curl -X POST "http://localhost:3000/api/attachments/$ATTACHMENT_ID/complete"
+curl -i -X POST \
+  "http://localhost:3000/api/attachments/$ATTACHMENT_ID/complete"
 ```
 
 期待する結果:
+
+```text
+HTTP/1.1 422 Unprocessable Entity
+```
 
 ```json
 {"status":"failed","reason":"file size mismatch","expectedSize":999,"actualSize":6}
 ```
 
-## 一括実行したい場合
+通常のcurlはHTTP 4xxでも本文を表示します。
+`--fail`または`-f`を付けた場合は、HTTP 422をエラー終了として扱います。
 
-スライドでは1つずつコマンドを打つ想定ですが、動作確認用にまとめたスクリプトもあります。
+### Windows PowerShell
+
+新しいSAS URLを発行します。
+
+```powershell
+$resp = Invoke-RestMethod `
+  -Method Post `
+  -Uri "http://localhost:3000/api/attachments/prepare" `
+  -ContentType "application/json" `
+  -Body '{
+    "fileName": "wrong-size.txt",
+    "fileSize": 999,
+    "contentType": "text/plain"
+  }'
+
+$uploadUrl = $resp.uploadUrl
+$attachmentId = $resp.attachmentId
+```
+
+6バイトのファイルを作成してPUTします。
+
+```powershell
+[System.IO.File]::WriteAllText(
+  "$env:TEMP\small.txt",
+  "small`n",
+  [System.Text.UTF8Encoding]::new($false)
+)
+
+(Get-Item "$env:TEMP\small.txt").Length
+
+Invoke-WebRequest `
+  -UseBasicParsing `
+  -Method Put `
+  -Uri $uploadUrl `
+  -Headers @{
+    "x-ms-blob-type" = "BlockBlob"
+    "Content-Type" = "text/plain"
+  } `
+  -InFile "$env:TEMP\small.txt"
+```
+
+サイズ不一致時、APIはHTTP 422を返します。
+Windows PowerShellの`Invoke-RestMethod`では例外として扱われるため、`try` / `catch`で本文を表示します。
+
+```powershell
+try {
+  Invoke-RestMethod `
+    -Method Post `
+    -Uri "http://localhost:3000/api/attachments/$attachmentId/complete"
+} catch {
+  $_.ErrorDetails.Message | ConvertFrom-Json
+}
+```
+
+期待する結果:
+
+```text
+status       : failed
+reason       : file size mismatch
+expectedSize : 999
+actualSize   : 6
+```
+
+これは想定どおりの失敗です。
+直接アップロード後にAPIがBlobの実体を確認できていることを示します。
+
+## 発表・動作確認用の短縮コマンド
+
+macOS / Linux / WSLでは、`demo.sh`を使って発表時の操作を短くできます。
+
+```bash
+./demo.sh start      # Azuriteとlocal APIを起動
+./demo.sh health     # 疎通確認
+./demo.sh prepare    # SAS URLを発行
+./demo.sh put        # Blobへ直接PUT
+./demo.sh complete   # completedを確認
+./demo.sh success    # 正常系を一括実行
+./demo.sh fail       # サイズ不一致を一括実行
+./demo.sh stop       # コンテナを停止
+./demo.sh reset      # コンテナとVolumeを削除
+```
+
+スライドに合わせて段階的に見せる場合:
 
 ```bash
 ./demo.sh start
-./demo.sh success
+./demo.sh prepare
+./demo.sh put
+./demo.sh complete
 ./demo.sh fail
 ```
 
 ## 片付け
 
-コンテナを停止:
+Blobデータを残してコンテナだけ停止:
 
 ```bash
 docker compose stop
 ```
 
-データも含めて初期化:
+コンテナ、ネットワーク、Blobデータ用Volumeを削除して初期化:
 
 ```bash
 docker compose down -v
 ```
 
+macOS / Linux / WSLで`demo.sh`を使う場合:
+
+```bash
+./demo.sh stop
+./demo.sh reset
+```
+
+## よくある問題
+
+### `Cannot connect to the Docker daemon`
+
+Docker Desktopを起動し、`docker compose version`を再実行してください。
+
+### `command not found: node`
+
+macOS / Linux / WSL側にNode.jsが必要です。
+
+macOSでHomebrewを使う場合:
+
+```bash
+brew install node
+node --version
+```
+
+### `permission denied: ./demo.sh`
+
+```bash
+chmod +x demo.sh
+```
+
+### ポート3000または10000が使用中
+
+macOS / Linux:
+
+```bash
+lsof -nP -iTCP:3000 -sTCP:LISTEN
+lsof -nP -iTCP:10000 -sTCP:LISTEN
+```
+
+Windows PowerShell:
+
+```powershell
+Get-NetTCPConnection -LocalPort 3000,10000 -ErrorAction SilentlyContinue
+```
+
+別のデモ用コンテナが残っている場合:
+
+```bash
+docker compose down
+```
+
+### `destination path 'azurite-blob-upload-demo' already exists`
+
+リポジトリはすでにcloneされています。既存ディレクトリへ移動し、`git pull`してください。
+
 ## 注意
 
-SAS URL には `sig=...` という署名が含まれます。本番の SAS URL は秘密情報として扱い、ログや公開資料にそのまま出さないでください。
+SAS URLには`sig=...`という署名が含まれます。
+本番のSAS URLは秘密情報として扱い、ログ、スクリーンショット、公開資料、SNSへそのまま掲載しないでください。
