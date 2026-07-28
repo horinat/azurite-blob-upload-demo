@@ -27,16 +27,13 @@ cd azurite-blob-upload-demo/demo
 ./demo.sh fail
 ```
 
-OS別の詳しい手順:
-
-- macOS: [demo/MACOS.md](demo/MACOS.md)
-- Windows PowerShell: [demo/WINDOWS_POWERSHELL.md](demo/WINDOWS_POWERSHELL.md)
+macOS、Linux、WSL、Windows PowerShellを含む詳しい手順は [demo/README.md](demo/README.md) を参照してください。
 
 ## Files
 
 - `demo/`
   - Azurite とデモ用 local API を Docker Compose で起動し、SAS URL 発行、直接 PUT、完了確認、失敗ケースを手元で試せるデモ一式です。
-    
+
 ## Architecture: 本番構成の考え方
 
 ```mermaid
@@ -162,6 +159,3 @@ curl http://localhost:3000/health
 ```
 
 詳しい手順は [demo/README.md](demo/README.md) を参照してください。
-
-- macOS: [demo/MACOS.md](demo/MACOS.md)
-- Windows PowerShell: [demo/WINDOWS_POWERSHELL.md](demo/WINDOWS_POWERSHELL.md)
