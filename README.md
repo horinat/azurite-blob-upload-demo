@@ -2,6 +2,33 @@
 
 AzuriteでAzure Blob Storageの直接アップロードを試すためのデモ資料です。
 
+## LTを見た方向け: 5分で試す
+
+Docker Desktop を起動してから実行してください。
+
+```bash
+git clone https://github.com/horinat/azurite-blob-upload-demo.git
+cd azurite-blob-upload-demo/demo
+docker compose up azurite azurite-init
+```
+
+別ターミナルで:
+
+```bash
+cd azurite-blob-upload-demo/demo
+./demo.sh success
+```
+
+これで、SAS URL 発行、Azurite への直接 PUT、Blob properties 確認、`completed` への状態更新まで一通り体験できます。
+
+失敗ケースも試す場合:
+
+```bash
+./demo.sh fail
+```
+
+Windows PowerShell で実行する場合は [demo/WINDOWS_POWERSHELL.md](demo/WINDOWS_POWERSHELL.md) を参照してください。
+
 ## Files
 
 - `demo/`
@@ -54,12 +81,6 @@ Web/APIは、アップロード可否の判断、SAS URL発行、完了通知の
 ## Try the Demo
 
 このデモは Docker Desktop を使います。
-PR が `main` にマージされる前に試す場合は、先にデモ用ブランチへ切り替えてください。
-
-```bash
-git fetch origin
-git switch agent/add-runnable-azurite-demo
-```
 
 ```bash
 cd demo
