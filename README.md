@@ -42,7 +42,7 @@ Windows PowerShell で実行する場合は [demo/WINDOWS_POWERSHELL.md](demo/WI
 - `outputs/azurite-architecture.mmd`
   - サービス構成図のMermaidソースです。
 
-## Architecture
+## Architecture: 本番構成の考え方
 
 ```mermaid
 flowchart LR
@@ -73,10 +73,71 @@ flowchart LR
   RBAC -. "Blob操作権限" .-> Storage
 ```
 
+## Architecture: デモ環境
+
+このリポジトリのデモでは、本物の Azure リソースは使いません。
+Docker Compose で Azurite とデモ用 local API を起動し、手元のPCだけで直接アップロードの流れを試します。
+
+```mermaid
+flowchart LR
+  User["参加者<br/>Terminal / Browser"]
+
+  subgraph LocalPC["Local PC"]
+    Compose["Docker Compose"]
+    API["local API<br/>localhost:3000"]
+    Azurite["Azurite<br/>127.0.0.1:10000"]
+    Container["attachments<br/>local container"]
+    Volume["Docker Volume<br/>Blobデータ永続化"]
+  end
+
+  User -->|"docker compose up"| Compose
+  Compose -->|"起動"| API
+  Compose -->|"起動"| Azurite
+  Azurite --> Container
+  Azurite --> Volume
+
+  User -->|"prepare / complete"| API
+  API -->|"SAS URL発行<br/>Blob properties確認"| Azurite
+  User -->|"SAS URLで直接PUT"| Azurite
+```
+
+デモ環境で起動するもの:
+
+- `azurite`
+  - Azure Blob Storage のローカルエミュレーター
+  - Blob endpoint は `http://127.0.0.1:10000`
+- `azurite-init`
+  - デモ用 local API
+  - API endpoint は `http://localhost:3000`
+  - `attachments` コンテナ作成、CORS設定、SAS URL発行、Blob properties確認を行います
+
 ## Key Point
 
 ファイル本体はWeb/APIを通らず、BrowserがSAS URLを使ってBlob Storageへ直接PUTします。
 Web/APIは、アップロード可否の判断、SAS URL発行、完了通知の受付、Blob properties確認、Metadata DBの状態更新を担当します。
+
+## Demo Prerequisites
+
+事前に必要なもの:
+
+- Docker Desktop
+- Git
+- macOS / Linux / WSL の場合: curl と Node.js
+- Windows PowerShell の場合: PowerShell
+
+Azureアカウント、Azure CLI、Azure Storage Account は不要です。
+デモでは Azurite が Blob Storage の代わりにローカルで動きます。
+
+初回起動時にダウンロードされるもの:
+
+- Azurite の Docker image: `mcr.microsoft.com/azure-storage/azurite:latest`
+- local API 用の Docker base image: `node:22-alpine`
+- local API の npm packages: `express`, `@azure/storage-blob`
+
+使うポート:
+
+- `10000`: Azurite Blob endpoint
+- `3000`: デモ用 local API
 
 ## Try the Demo
 
