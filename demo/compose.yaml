@@ -1,0 +1,41 @@
+services:
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    command: >
+      azurite
+      --blobHost 0.0.0.0
+      --queueHost 0.0.0.0
+      --tableHost 0.0.0.0
+      --location /data
+      --debug /data/debug.log
+      --skipApiVersionCheck
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    volumes:
+      - azurite-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 10000"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+  azurite-init:
+    build:
+      context: ./api
+    depends_on:
+      azurite:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: "3000"
+      AZURITE_ACCOUNT_NAME: devstoreaccount1
+      AZURITE_ACCOUNT_KEY: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
+      AZURITE_INTERNAL_BLOB_ENDPOINT: "http://azurite:10000/devstoreaccount1"
+      AZURITE_PUBLIC_BLOB_ENDPOINT: "http://127.0.0.1:10000/devstoreaccount1"
+      AZURITE_CONNECTION_STRING: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;"
+
+volumes:
+  azurite-data:
