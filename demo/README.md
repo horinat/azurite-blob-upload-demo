@@ -12,9 +12,84 @@ Azure Blob Storage への直接アップロード構成を、Azurite でロー�
 ## 必要なもの
 
 - Docker Desktop
+- curl または Windows PowerShell
 - Node.js
-  - レスポンス JSON から `uploadUrl` と `attachmentId` を取り出すコマンドで使います
-- curl
+  - macOS / Linux / WSL の手動コマンドや `demo.sh` で、レスポンス JSON から `uploadUrl` と `attachmentId` を取り出すために使います
+  - Windows PowerShell の手順だけを使う場合、ローカルの Node.js は不要です
+
+## デモ環境構築
+
+### 1. リポジトリを取得
+
+```bash
+git clone https://github.com/horinat/azurite-blob-upload-demo.git
+cd azurite-blob-upload-demo
+```
+
+PR がまだ `main` にマージされていない場合は、デモ用ブランチへ切り替えます。
+
+```bash
+git fetch origin
+git switch agent/add-runnable-azurite-demo
+```
+
+### 2. Docker Desktop を起動
+
+このデモは Azurite と local API を Docker Compose で起動します。
+事前に Docker Desktop を起動して、`docker compose` が使える状態にしてください。
+
+確認:
+
+```bash
+docker compose version
+```
+
+### 3. デモ用ディレクトリへ移動
+
+macOS / Linux / WSL:
+
+```bash
+cd demo
+```
+
+Windows PowerShell:
+
+```powershell
+cd demo
+```
+
+### 4. 初回起動
+
+```bash
+docker compose up azurite azurite-init
+```
+
+初回は Docker image の取得と local API の依存パッケージインストールがあるため、少し時間がかかります。
+ログに `Local API listening on http://localhost:3000` が出たら準備完了です。
+
+### 5. 疎通確認
+
+別ターミナルを開き、同じ `demo` ディレクトリで実行します。
+
+macOS / Linux / WSL:
+
+```bash
+curl http://localhost:3000/health
+```
+
+Windows PowerShell:
+
+```powershell
+Invoke-RestMethod -Uri "http://localhost:3000/health"
+```
+
+`{"ok":true}` または `ok: True` が返れば、デモ環境は起動できています。
+
+## OS別のコマンド
+
+このREADMEのコマンドは macOS / Linux / WSL の bash 向けです。
+
+Windows PowerShell で実行したい場合は、[WINDOWS_POWERSHELL.md](WINDOWS_POWERSHELL.md) を参照してください。
 
 ## Demo 1: Azurite を起動
 

@@ -53,6 +53,14 @@ Web/APIは、アップロード可否の判断、SAS URL発行、完了通知の
 
 ## Try the Demo
 
+このデモは Docker Desktop を使います。
+PR が `main` にマージされる前に試す場合は、先にデモ用ブランチへ切り替えてください。
+
+```bash
+git fetch origin
+git switch agent/add-runnable-azurite-demo
+```
+
 ```bash
 cd demo
 docker compose up azurite azurite-init
@@ -66,3 +74,5 @@ curl http://localhost:3000/health
 ```
 
 詳しい手順は [demo/README.md](demo/README.md) を参照してください。
+
+Windows PowerShell で実行する場合は [demo/WINDOWS_POWERSHELL.md](demo/WINDOWS_POWERSHELL.md) を参照してください。

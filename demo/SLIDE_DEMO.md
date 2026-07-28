@@ -2,6 +2,9 @@
 
 スライドに合わせたデモ用コマンドです。
 
+このファイルは macOS / Linux / WSL の bash 向けです。
+Windows PowerShell で実行する場合は [WINDOWS_POWERSHELL.md](WINDOWS_POWERSHELL.md) を参照してください。
+
 ## Demo 1: Azurite を起動
 
 ```bash
