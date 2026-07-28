@@ -34,10 +34,74 @@ docker compose up azurite azurite-init
 ## 必要なもの
 
 - Docker Desktop
-- curl または Windows PowerShell
-- Node.js
-  - macOS / Linux / WSL の手動コマンドや `demo.sh` で、レスポンス JSON から `uploadUrl` と `attachmentId` を取り出すために使います
+  - Azurite と local API を Docker Compose で起動するために使います
+- Git
+  - このリポジトリを取得するために使います
+- macOS / Linux / WSL の場合
+  - curl
+  - Node.js
+    - 手動コマンドや `demo.sh` で、レスポンス JSON から `uploadUrl` と `attachmentId` を取り出すために使います
+- Windows PowerShell の場合
+  - Windows PowerShell
   - Windows PowerShell の手順だけを使う場合、ローカルの Node.js は不要です
+
+Azureアカウント、Azure CLI、Azure Storage Account は不要です。
+このデモでは Azurite が Blob Storage の代わりとしてローカルで動きます。
+
+## 初回起動時にダウンロードされるもの
+
+初回の `docker compose up azurite azurite-init` では、必要な Docker image や npm packages を取得するため、少し時間がかかります。
+
+- Azurite の Docker image
+  - `mcr.microsoft.com/azure-storage/azurite:latest`
+- local API 用の Docker base image
+  - `node:22-alpine`
+- local API の npm packages
+  - `express`
+  - `@azure/storage-blob`
+
+初回起動時はインターネット接続が必要です。
+2回目以降は、取得済みの image や package cache が使われるため、初回より速く起動できます。
+
+## デモ環境の構成
+
+```mermaid
+flowchart LR
+  User["参加者<br/>Terminal / Browser"]
+
+  subgraph LocalPC["Local PC"]
+    Compose["Docker Compose"]
+    API["local API<br/>localhost:3000"]
+    Azurite["Azurite<br/>127.0.0.1:10000"]
+    Container["attachments<br/>local container"]
+    Volume["Docker Volume<br/>Blobデータ永続化"]
+  end
+
+  User -->|"docker compose up"| Compose
+  Compose -->|"起動"| API
+  Compose -->|"起動"| Azurite
+  Azurite --> Container
+  Azurite --> Volume
+
+  User -->|"prepare / complete"| API
+  API -->|"SAS URL発行<br/>Blob properties確認"| Azurite
+  User -->|"SAS URLで直接PUT"| Azurite
+```
+
+このデモで動くもの:
+
+- `azurite`
+  - Azure Blob Storage のローカルエミュレーターです
+  - Blob endpoint は `http://127.0.0.1:10000` です
+- `azurite-init`
+  - デモ用 local API です
+  - API endpoint は `http://localhost:3000` です
+  - `attachments` コンテナ作成、CORS設定、SAS URL発行、Blob properties確認を行います
+
+使うポート:
+
+- `10000`: Azurite Blob endpoint
+- `3000`: デモ用 local API
 
 ## デモ環境構築
 
