@@ -16,6 +16,12 @@ Azure Blob Storage への直接アップロード構成を、Azurite でロー�
   - レスポンス JSON から `uploadUrl` と `attachmentId` を取り出すコマンドで使います
 - curl
 
+## OS別のコマンド
+
+このREADMEのコマンドは macOS / Linux / WSL の bash 向けです。
+
+Windows PowerShell で実行したい場合は、[WINDOWS_POWERSHELL.md](WINDOWS_POWERSHELL.md) を参照してください。
+
 ## Demo 1: Azurite を起動
 
 ターミナル1で実行します。
