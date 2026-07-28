@@ -112,10 +112,21 @@ Web/APIは、アップロード可否の判断、SAS URL発行、完了通知の
 
 事前に必要なもの:
 
-- Docker Desktop
-- Git
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- [Git](https://git-scm.com/install/)
+  - Windows では WinGet でも導入できます: `winget install --id Git.Git -e --source winget`
+  - インストール後はターミナルを開き直し、`git --version` で確認してください
 - macOS / Linux / WSL の場合: curl と Node.js
 - Windows PowerShell の場合: PowerShell
+  - Git for Windows、Windows PowerShell、Docker Desktop の構成で実行できます
+  - Ubuntu などの作業用 WSL ディストリビューションや、ローカルの Node.js は不要です
+
+確認:
+
+```powershell
+git --version
+docker compose version
+```
 
 Azureアカウント、Azure CLI、Azure Storage Account は不要です。
 デモでは Azurite が Blob Storage の代わりにローカルで動きます。
