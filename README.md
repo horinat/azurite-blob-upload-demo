@@ -33,15 +33,7 @@ Windows PowerShell で実行する場合は [demo/WINDOWS_POWERSHELL.md](demo/WI
 
 - `demo/`
   - Azurite とデモ用 local API を Docker Compose で起動し、SAS URL 発行、直接 PUT、完了確認、失敗ケースを手元で試せるデモ一式です。
-- `outputs/azurite-blob-upload-lt-native.pptx`
-  - 発表・デモ用のPowerPoint資料です。
-- `outputs/azurite-architecture.png`
-  - サービス構成図の画像です。
-- `outputs/azurite-architecture.svg`
-  - サービス構成図のSVGです。
-- `outputs/azurite-architecture.mmd`
-  - サービス構成図のMermaidソースです。
-
+  - 
 ## Architecture: 本番構成の考え方
 
 ```mermaid
