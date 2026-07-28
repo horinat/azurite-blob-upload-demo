@@ -27,7 +27,10 @@ cd azurite-blob-upload-demo/demo
 ./demo.sh fail
 ```
 
-Windows PowerShell で実行する場合は [demo/WINDOWS_POWERSHELL.md](demo/WINDOWS_POWERSHELL.md) を参照してください。
+OS別の詳しい手順:
+
+- macOS: [demo/MACOS.md](demo/MACOS.md)
+- Windows PowerShell: [demo/WINDOWS_POWERSHELL.md](demo/WINDOWS_POWERSHELL.md)
 
 ## Files
 
@@ -160,4 +163,5 @@ curl http://localhost:3000/health
 
 詳しい手順は [demo/README.md](demo/README.md) を参照してください。
 
-Windows PowerShell で実行する場合は [demo/WINDOWS_POWERSHELL.md](demo/WINDOWS_POWERSHELL.md) を参照してください。
+- macOS: [demo/MACOS.md](demo/MACOS.md)
+- Windows PowerShell: [demo/WINDOWS_POWERSHELL.md](demo/WINDOWS_POWERSHELL.md)
