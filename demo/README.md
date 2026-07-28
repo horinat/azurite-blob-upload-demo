@@ -9,6 +9,28 @@ Azure Blob Storage への直接アップロード構成を、Azurite でロー�
 - Blob properties を確認して `completed` にする
 - 申告サイズと実サイズが違う失敗ケースを `failed` にする
 
+## まず試す
+
+Docker Desktop を起動してから、ターミナル1で実行します。
+
+```bash
+docker compose up azurite azurite-init
+```
+
+別ターミナルで、成功ケースを一括実行します。
+
+```bash
+./demo.sh success
+```
+
+失敗ケースも試す場合:
+
+```bash
+./demo.sh fail
+```
+
+1つずつコマンドを打って LT と同じ流れを確認したい場合は、下の `Demo 1` 以降を順番に実行してください。
+
 ## 必要なもの
 
 - Docker Desktop
@@ -24,13 +46,6 @@ Azure Blob Storage への直接アップロード構成を、Azurite でロー�
 ```bash
 git clone https://github.com/horinat/azurite-blob-upload-demo.git
 cd azurite-blob-upload-demo
-```
-
-PR がまだ `main` にマージされていない場合は、デモ用ブランチへ切り替えます。
-
-```bash
-git fetch origin
-git switch agent/add-runnable-azurite-demo
 ```
 
 ### 2. Docker Desktop を起動
